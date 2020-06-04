@@ -27,9 +27,9 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 3
+NUM_WORKERS = 9
 NGEN = 700
-MU = 60
+MU = 40
 CXPB = 0.9
 BOUND_LOW, BOUND_UP = -5.0, 5.0
 
