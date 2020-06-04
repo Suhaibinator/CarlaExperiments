@@ -27,9 +27,9 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 9
+NUM_WORKERS = 18
 NGEN = 700
-MU = 40
+MU = 48
 CXPB = 0.9
 BOUND_LOW, BOUND_UP = -5.0, 5.0
 
@@ -111,15 +111,15 @@ def main():
     logbook = tools.Logbook()
     logbook.header = "gen", "min", "max"
     
-    pop = toolbox.population(n=MU)
-    """
-    with open("gen502_CS1_checkpoint.pkl","rb") as file:
+    #pop = toolbox.population(n=MU)
+    
+    with open("gen237_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
     gen = cp["generation"]
     random.setstate(cp["rndstate"])
-    """
+    
     
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid] # Genotype
@@ -219,8 +219,8 @@ def main():
             with open("gen%d_CS1_checkpoint.pkl" % (gen), "wb") as cp_file:
                 pickle.dump(cp, cp_file)
                 
-            if gen > 0:
-                call("rm gen%d_*" % (gen-1), shell=True)
+            #if gen > 0:
+            #    call("rm gen%d_*" % (gen-1), shell=True)
 
             met_fitness = 0
             for ind in pop:

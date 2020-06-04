@@ -27,11 +27,7 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 9
-NGEN = 700
-MU = 40
-CXPB = 0.9
-BOUND_LOW, BOUND_UP = -5.0, 5.0
+NUM_WORKERS = 10
 
 n_obs = 5 # number of inputs
 n_actions = 2 # number of outputs
@@ -96,8 +92,6 @@ toolbox.register("attr_float", np.random.randn)
 toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, NDIM)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("evaluate", eval_jobs)
-toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0)
-toolbox.register("mutate", tools.mutPolynomialBounded, low=BOUND_LOW, up=BOUND_UP, eta=20.0, indpb=1.0/NDIM)
 toolbox.register("select", tools.selNSGA2)
 toolbox.register("map", futures.map)
 
