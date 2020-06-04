@@ -143,8 +143,9 @@ def main():
     results = toolbox.map(toolbox.evaluate, worker_jobs)
     fitnesses = [[0, 0] for ind in invalid_ind]
     for result in results:
-        fitnesses[result[0]][0]+=result[1]
-        fitnesses[result[0]][1]+=result[2]
+        for job in result:
+            fitnesses[job[0]][0]+=job[1]
+            fitnesses[job[0]][1]+=job[2]
     
     for i in range(len(invalid_ind)):
         ind = invalid_ind[i]
@@ -200,8 +201,9 @@ def main():
             results = toolbox.map(toolbox.evaluate, worker_jobs)
             fitnesses = [[0, 0] for ind in invalid_ind]
             for result in results:
-                fitnesses[result[0]][0]+=result[1]
-                fitnesses[result[0]][1]+=result[2]
+                for job in result:
+                    fitnesses[job[0]][0]+=job[1]
+                    fitnesses[job[0]][1]+=job[2]
     
             for i in range(len(invalid_ind)):
                 ind = invalid_ind[i]
