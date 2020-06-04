@@ -27,7 +27,7 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 10
+NUM_WORKERS = 3
 NGEN = 700
 MU = 60
 CXPB = 0.9
@@ -44,7 +44,7 @@ base_phys = {'flwf': 3.5, 'frwf': 3.5, 'rlwf': 3.5, 'rrwf': 3.5, 'mass': 2090,
              'steer2': 0.8, 'steer3': 0.7, 'torque1': 500.76} 
 percent = 0.2 # +/- 20% variation of the nominal task parameters
 REPEATS = 5
-dimensions = [('steer1', 'steer2', 'steer3'), ('torque1')]
+dimensions = [('steer1', 'steer2', 'steer3'), ('torque1',)]
 
 #-----------------------------------------------------------------------------
 # Helper functions
