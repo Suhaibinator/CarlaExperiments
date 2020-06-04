@@ -202,6 +202,10 @@ class World(object):
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
         self.f0 += get_distance(current_loc.x, current_loc.y)
         #print("F0 val: " + str(self.f0))
+        
+    def eval_target_distance_reward(self):
+        pos = self.player.get_location()
+        return 10*math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
 
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
@@ -234,7 +238,6 @@ class KeyboardControl(object):
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
                 v = world.player.get_velocity()
-                #speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
                 
                 current_transform = world.player.get_transform()
                 pos = current_transform.location
@@ -299,9 +302,8 @@ def game_loop(args, net, scaler, port, phys_settings):
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
-                current_transform = world.player.get_transform()
-                pos = current_transform.location
-                return world.f0, math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+                
+                return world.f0, world.eval_target_distance_reward()
             elif result:
                 return
             
@@ -310,7 +312,7 @@ def game_loop(args, net, scaler, port, phys_settings):
         current_transform = world.player.get_transform()
         pos = current_transform.location
         f0 = world.f0
-        f1 = math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+        f1 = world.eval_target_distance_reward()
     finally:
 
         if (world and world.recording_enabled):

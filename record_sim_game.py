@@ -217,6 +217,10 @@ class World(object):
         self.f0 += get_distance(current_loc.x, current_loc.y)
         #print("F0 val: " + str(self.f0))
         
+    def eval_target_distance_reward(self):
+        pos = self.player.get_location()
+        return 10*math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+        
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
 # ==============================================================================
@@ -505,7 +509,7 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             if result == 5:
                 current_transform = world.player.get_transform()
                 pos = current_transform.location
-                return world.f0, math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+                return world.f0, world.eval_target_distance_reward()
             elif result:
                 return
             
@@ -514,7 +518,7 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
         current_transform = world.player.get_transform()
         pos = current_transform.location
         f0 = world.f0
-        f1 = math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+        f1 = world.eval_target_distance_reward()
     finally:
 
         if (world and world.recording_enabled):
