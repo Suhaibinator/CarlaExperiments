@@ -112,7 +112,7 @@ def main():
     logbook.header = "gen", "min", "max"
     
     
-    with open("gen502_CS1_checkpoint.pkl","rb") as file:
+    with open("gen237_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
