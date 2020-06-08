@@ -53,7 +53,7 @@ import sys
 try:
     import carla
 except:
-    sys.path.append('/home/suhaib/Desktop/GRA/carla2/PythonAPI/carla/dist/carla-0.9.8-py3.5-linux-x86_64.egg')
+    sys.path.append('/home/suhaib/carla_files/PythonAPI/carla/dist/carla-0.9.8-py3.5-linux-x86_64.egg')
     import carla
 
 
