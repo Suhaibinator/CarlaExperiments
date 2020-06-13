@@ -77,7 +77,7 @@ import weakref
 
 
 
-from regression3 import get_distance
+from regression4 import get_distance
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -200,7 +200,7 @@ class World(object):
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
-        self.f0 += get_distance(current_loc.x, current_loc.y)
+        self.f0 += abs(get_distance(current_loc.x, current_loc.y))
         #print("F0 val: " + str(self.f0))
         
     def eval_target_distance_reward(self):
@@ -242,7 +242,7 @@ class KeyboardControl(object):
                 current_transform = world.player.get_transform()
                 pos = current_transform.location
                 
-                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw)
+                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, get_distance(pos.x, pos.y))
                 
                 #self._control.throttle = 1.0 if speed < self.world.speed else 0.0
                 #self._control.reverse = self._control.gear < 0
@@ -250,9 +250,9 @@ class KeyboardControl(object):
 
             world.player.apply_control(self._control)
 
-    def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw):
+    def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw, displacement):
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, pos_x, pos_y, yaw]))
+            chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, pos_x, pos_y, yaw, displacement]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             #self._steer_cache = min(0.7, max(-0.7, self._steer_cache))
@@ -309,8 +309,6 @@ def game_loop(args, net, scaler, port, phys_settings):
             
             world.eval_reward()
 
-        current_transform = world.player.get_transform()
-        pos = current_transform.location
         f0 = world.f0
         f1 = world.eval_target_distance_reward()
     finally:

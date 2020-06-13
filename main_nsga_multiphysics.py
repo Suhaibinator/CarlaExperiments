@@ -1,6 +1,6 @@
 
 from par_gcp_phys_barebone import Game # This will be replaced by the CARLA-Tasks module
-from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
+from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
 
 import os
 import math
@@ -27,13 +27,13 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 18
-NGEN = 700
+NUM_WORKERS = 10
+NGEN = 900
 MU = 48
 CXPB = 0.9
 BOUND_LOW, BOUND_UP = -5.0, 5.0
 
-n_obs = 5 # number of inputs
+n_obs = 6 # number of inputs
 n_actions = 2 # number of outputs
 net_sample = S_o_net(n_obs, n_actions)
 NDIM = net_sample.computeTotalNumberOfParameters()
@@ -113,7 +113,7 @@ def main():
     
     #pop = toolbox.population(n=MU)
     
-    with open("gen237_CS1_checkpoint.pkl","rb") as file:
+    with open("gen884_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
