@@ -113,6 +113,7 @@ def main():
     
     pop = toolbox.population(n=MU)
     """
+    # Uncomment this block of code to resume evolution from a saved file
     with open("gen884_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
@@ -124,22 +125,25 @@ def main():
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid] # Genotype
     
-    
+    # Distribute tasks accross all workers
     num_per_worker = [math.floor(len(invalid_ind*REPEATS*len(dimensions))/NUM_WORKERS) for i in range(NUM_WORKERS)]
     for i in range(len(invalid_ind*REPEATS*len(dimensions))%NUM_WORKERS):
         num_per_worker[i]+=1
     
+    # Assigne job number to each task
     jobs = []
     for i in range(len(invalid_ind)):
         for task in gen_tasks():
             jobs.append((i, task))
     
+    # Assign port number to each job
     last_one = 0
     worker_jobs = []
     for i in range(len(num_per_worker)):
         worker_jobs.append((2000+2*i, [(job[0], invalid_ind[job[0]], job[1]) for job in jobs[last_one:last_one+num_per_worker[i]]]))
         last_one+=num_per_worker[i]
     
+    # Compile fitnesses
     results = toolbox.map(toolbox.evaluate, worker_jobs)
     fitnesses = [[0, 0] for ind in invalid_ind]
     for result in results:

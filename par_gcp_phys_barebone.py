@@ -1,44 +1,8 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2019 Computer Vision Center (CVC) at the Universitat Autonoma de
-# Barcelona (UAB).
-#
-# This work is licensed under the terms of the MIT license.
-# For a copy, see <https://opensource.org/licenses/MIT>.
-
-# Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
 
 """
-Welcome to CARLA manual control.
-
-Use ARROWS or WASD keys for control.
-
-    W            : throttle
-    S            : brake
-    AD           : steer
-    Q            : toggle reverse
-    Space        : hand-brake
-    P            : toggle autopilot
-    M            : toggle manual transmission
-    ,/.          : gear up/down
-
-    TAB          : change sensor position
-    `            : next sensor
-    [1-9]        : change to sensor [1-9]
-    C            : change weather (Shift+C reverse)
-    Backspace    : change vehicle
-
-    R            : toggle recording images to disk
-
-    CTRL + R     : toggle recording of simulation (replacing any previous)
-    CTRL + P     : start replaying last recorded simulation
-    CTRL + +     : increments the start time of the replay by 1 second (+SHIFT = 10 seconds)
-    CTRL + -     : decrements the start time of the replay by 1 second (+SHIFT = 10 seconds)
-
-    F1           : toggle HUD
-    H/?          : toggle help
-    ESC          : quit
+Barebone Simulation without camera or extraneous sensors.
 """
 
 from __future__ import print_function
@@ -174,15 +138,6 @@ class World(object):
         #rot = self.player.get_transform().rotation.yaw
         #self.player.set_velocity(carla.Vector3D(self.speed*math.cos(rot*math.pi/180)/3.6, self.speed*math.sin(rot*math.pi/180)/3.6, 0))
 
-    def next_weather(self, reverse=False):
-        self._weather_index += -1 if reverse else 1
-        self._weather_index %= len(self._weather_presets)
-        preset = self._weather_presets[self._weather_index]
-        self.player.get_world().set_weather(preset[0])
-
-
-    def render(self, display):
-        self.camera_manager.render(display)
 
     def destroy_sensors(self):
         self.camera_manager.sensor.destroy()
@@ -237,17 +192,10 @@ class KeyboardControl(object):
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                v = world.player.get_velocity()
-                
+                v = world.player.get_velocity()                
                 current_transform = world.player.get_transform()
-                pos = current_transform.location
-                
-                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, get_distance(pos.x, pos.y))
-                
-                #self._control.throttle = 1.0 if speed < self.world.speed else 0.0
-                #self._control.reverse = self._control.gear < 0
-                
-
+                pos = current_transform.location                
+                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, get_distance(pos.x, pos.y)
             world.player.apply_control(self._control)
 
     def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw, displacement):
@@ -255,10 +203,8 @@ class KeyboardControl(object):
             chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, pos_x, pos_y, yaw, displacement]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
-            #self._steer_cache = min(0.7, max(-0.7, self._steer_cache))
             self._control.steer = round(self._steer_cache, 1)
             self._control.throttle = chosen_action[1].item()
-            #self._control.steer = 0
 
 
 
