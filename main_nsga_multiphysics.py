@@ -42,9 +42,13 @@ NDIM = net_sample.computeTotalNumberOfParameters()
 base_phys = {'flwf': 3.5, 'frwf': 3.5, 'rlwf': 3.5, 'rrwf': 3.5, 'mass': 2090,
              'flwmsa': 70, 'frwmsa': 70, 'speed': 60, 'steer1': 0.9,
              'steer2': 0.8, 'steer3': 0.7, 'torque1': 500.76} 
-percent = 0.2 # +/- 20% variation of the nominal task parameters
-REPEATS = 5
-dimensions = [('steer1', 'steer2', 'steer3'), ('torque1',)]
+#percent = 0.2 # +/- 20% variation of the nominal task parameters
+#REPEATS = 5
+#dimensions = [('steer1', 'steer2', 'steer3'), ('torque1',)]
+
+percent = 0 # +/- 20% variation of the nominal task parameters
+REPEATS = 1
+dimensions = [('steer1', 'steer2', 'steer3')]
 
 #-----------------------------------------------------------------------------
 # Helper functions

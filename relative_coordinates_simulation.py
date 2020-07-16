@@ -209,8 +209,10 @@ class KeyboardControl(object):
         D = math.sqrt((pos_x - world.current_target_x)**2 + (pos_y - world.current_target_y)**2)
         adj_dist = D*math.cos(theta)
         perp_dist = D*math.sin(theta)
+        v_straight = vel_y*math.cos(yaw*math.pi/180) + vel_x*math.cos(math.pi*0.5-yaw*math.pi/180)
+        v_perp = vel_y*math.sin(yaw*math.pi/180) + vel_x*math.sin(math.pi*0.5-yaw*math.pi/180)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, adj_dist, perp_dist, yaw]))
+            chosen_action = self._net(torch.FloatTensor([v_straight, v_perp, adj_dist, perp_dist, yaw]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
