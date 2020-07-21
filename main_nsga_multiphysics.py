@@ -115,16 +115,16 @@ def main():
     logbook = tools.Logbook()
     logbook.header = "gen", "min", "max"
     
-    pop = toolbox.population(n=MU)
-    """
+    #pop = toolbox.population(n=MU)
+    
     # Uncomment this block of code to resume evolution from a saved file
-    with open("gen884_CS1_checkpoint.pkl","rb") as file:
+    with open("gen826_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
     gen = cp["generation"]
     random.setstate(cp["rndstate"])
-    """
+    
     
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid] # Genotype
