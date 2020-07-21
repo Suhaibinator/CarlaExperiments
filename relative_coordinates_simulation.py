@@ -196,14 +196,15 @@ class KeyboardControl(object):
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                v = world.player.get_velocity()                
+                v = world.player.get_velocity() 
+                acc = world.player.get_acceleration()
                 current_transform = world.player.get_transform()
                 pos = current_transform.location
                 world.current_target_x, world.current_target_y, world.current_target_rank = get_new_target(pos.x, pos.y, world.current_target_x, world.current_target_y, world.current_target_rank)
-                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, world)
+                self.calculate_steering_throttle(acc.x, acc.y, v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, world)
             world.player.apply_control(self._control)
 
-    def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw, world):
+    def calculate_steering_throttle(self, acc_x, acc_y, vel_x, vel_y, pos_x, pos_y, yaw, world):
         phi = math.pi-math.atan((world.current_target_y - pos_y)/(world.current_target_x - pos_x))
         theta = yaw*math.pi/180-phi
         D = math.sqrt((pos_x - world.current_target_x)**2 + (pos_y - world.current_target_y)**2)
@@ -211,8 +212,10 @@ class KeyboardControl(object):
         perp_dist = D*math.sin(theta)
         v_straight = vel_y*math.cos(yaw*math.pi/180) + vel_x*math.cos(math.pi*0.5-yaw*math.pi/180)
         v_perp = vel_y*math.sin(yaw*math.pi/180) + vel_x*math.sin(math.pi*0.5-yaw*math.pi/180)
+        a_straight = acc_y*math.cos(yaw*math.pi/180) + acc_x*math.cos(math.pi*0.5-yaw*math.pi/180)
+        a_perp = acc_y*math.sin(yaw*math.pi/180) + acc_x*math.sin(math.pi*0.5-yaw*math.pi/180)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([v_straight, v_perp, adj_dist, perp_dist, yaw]))
+            chosen_action = self._net(torch.FloatTensor([a_straight, a_perp, v_straight, v_perp, adj_dist, perp_dist]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
