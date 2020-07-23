@@ -31,9 +31,16 @@ def get_distance(test_x, test_y):
     cross_result = np.cross([deltaX, deltaY], [otherDeltaX, otherDeltaY])
     return (cross_result/abs(cross_result))*dist[0][0]
 
+target_delta_jump = 8
+
 def get_new_target(current_x, current_y, current_target_x, current_target_y, current_target_rank):
     #result, indices = nbrs.kneighbors(np.array([[current_x, current_y]]))
-    if math.sqrt((current_x - current_target_x)**2 + (current_y - current_target_y)**2) < 2:
-        new_point = points[min(len(points), current_target_rank+5)]
-        return new_point[0], new_point[1], current_target_rank+5
+    #print("Current dist: " + str(math.sqrt((current_x - current_target_x)**2 + (current_y - current_target_y)**2)))
+    dist_to_target = math.sqrt((current_x - current_target_x)**2 + (current_y - current_target_y)**2)
+    if dist_to_target < 2 or dist_to_target > math.sqrt((current_x - points[min(len(points), current_target_rank+1)][0])**2 + (current_y - points[min(len(points), current_target_rank+1)][1])**2):
+        new_point = points[min(len(points), current_target_rank+4)]
+        return new_point[0], new_point[1], current_target_rank+4
+    if dist_to_target > math.sqrt((current_x - points[min(len(points), current_target_rank+1)][0])**2 + (current_y - points[min(len(points), current_target_rank+1)][1])**2):
+        new_point = points[min(len(points), current_target_rank+target_delta_jump)]
+        return new_point[0], new_point[1], current_target_rank+target_delta_jump
     return current_target_x, current_target_y, current_target_rank
