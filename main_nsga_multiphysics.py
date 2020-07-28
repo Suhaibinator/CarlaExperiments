@@ -27,13 +27,13 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 18
+NUM_WORKERS = 15
 NGEN = 900
 MU = 48
 CXPB = 0.9
 BOUND_LOW, BOUND_UP = -5.0, 5.0
 
-n_obs = 6 # number of inputs
+n_obs = 5 # number of inputs
 n_actions = 2 # number of outputs
 net_sample = S_o_net(n_obs, n_actions)
 NDIM = net_sample.computeTotalNumberOfParameters()
