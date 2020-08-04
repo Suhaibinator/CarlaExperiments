@@ -3,6 +3,7 @@
 
 """
 Barebone Simulation without camera or extraneous sensors.
+With navigation and relative coordinates
 """
 
 from __future__ import print_function
@@ -37,11 +38,12 @@ import math
 import random
 import re
 import weakref
+import numpy as np
 
 
 
-
-from regression4 import get_distance
+from regression4 import get_distance, get_new_target
+import regression5
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -84,6 +86,9 @@ class World(object):
             self.apply_physics(phys_settings)
         self.recording_enabled = False
         self.recording_start = 0
+        self.current_target_x = 229.564
+        self.current_target_y = 84.43462372
+        self.current_target_rank = 0
         self.f0 = 0
         self.f1 = 0
 
@@ -192,15 +197,20 @@ class KeyboardControl(object):
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                v = world.player.get_velocity()                
                 current_transform = world.player.get_transform()
-                pos = current_transform.location                
-                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, get_distance(pos.x, pos.y))
+                pos = current_transform.location
+                self.calculate_steering_throttle(pos.x, pos.y, current_transform.rotation.yaw, world)
             world.player.apply_control(self._control)
 
-    def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw, displacement):
+    def calculate_steering_throttle(self, pos_x, pos_y, yaw, world):
+        ray1, ray2, ray3, ray4, ray5 = regression5.generate_rays(pos_x, pos_y, yaw)
+        dist1 = regression5.find_intersect_dist(pos_x, pos_y, ray1)
+        dist2 = regression5.find_intersect_dist(pos_x, pos_y, ray2)
+        dist3 = regression5.find_intersect_dist(pos_x, pos_y, ray3)
+        dist4 = regression5.find_intersect_dist(pos_x, pos_y, ray4)
+        dist5 = regression5.find_intersect_dist(pos_x, pos_y, ray5)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, pos_x, pos_y, yaw, displacement]))
+            chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
@@ -248,7 +258,6 @@ def game_loop(args, net, scaler, port, phys_settings):
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
-                
                 return world.f0, world.eval_target_distance_reward()
             elif result:
                 return

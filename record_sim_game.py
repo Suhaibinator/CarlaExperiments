@@ -78,7 +78,7 @@ except ImportError:
     raise RuntimeError('cannot import numpy, make sure numpy package is installed')
 
 
-from regression3 import get_distance
+from regression4 import get_distance, get_new_target
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -100,7 +100,6 @@ def get_actor_display_name(actor, truncate=250):
 # ==============================================================================
 # -- World ---------------------------------------------------------------------
 # ==============================================================================
-
 
 class World(object):
     def __init__(self, carla_world, actor_filter, phys_settings, cam_path, actor_role_name='hero'):
@@ -124,6 +123,11 @@ class World(object):
         self.recording_start = 0
         self.f0 = 0
         self.f1 = 0
+        self.recording_start = 0
+        self.current_target_x = 229.564
+        self.current_target_y = 84.43462372
+        self.current_target_rank = 0
+
 
     def restart(self):
         # Keep same camera config if the camera manager exists.
@@ -214,7 +218,7 @@ class World(object):
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
-        self.f0 += get_distance(current_loc.x, current_loc.y)
+        self.f0 += abs(get_distance(current_loc.x, current_loc.y))
         #print("F0 val: " + str(self.f0))
         
     def eval_target_distance_reward(self):
@@ -231,6 +235,7 @@ class KeyboardControl(object):
         self._net = net
         self._scaler = scaler
         self._autopilot_enabled = start_in_autopilot
+        self.world = world
         if isinstance(world.player, carla.Vehicle):
             self._control = carla.VehicleControl()
             #world.player.set_autopilot(self._autopilot_enabled)
@@ -250,32 +255,30 @@ class KeyboardControl(object):
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                v = world.player.get_velocity()
-                #speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
-                
+                v = world.player.get_velocity() 
+                acc = world.player.get_acceleration()
                 current_transform = world.player.get_transform()
                 pos = current_transform.location
-                
-                self.calculate_steering_throttle(v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw)
-                
-                #self._control.throttle = 1.0 if speed < self.world.speed else 0.0
-                #self._control.reverse = self._control.gear < 0
-
+                world.current_target_x, world.current_target_y, world.current_target_rank = get_new_target(pos.x, pos.y, world.current_target_x, world.current_target_y, world.current_target_rank)
+                self.calculate_steering_throttle(acc.x, acc.y, v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, world)
             world.player.apply_control(self._control)
 
-    def calculate_steering_throttle(self, vel_x, vel_y, pos_x, pos_y, yaw):
+    def calculate_steering_throttle(self, acc_x, acc_y, vel_x, vel_y, pos_x, pos_y, yaw, world):
+        phi = math.pi-math.atan((world.current_target_y - pos_y)/(world.current_target_x - pos_x))
+        theta = yaw*math.pi/180-phi
+        D = math.sqrt((pos_x - world.current_target_x)**2 + (pos_y - world.current_target_y)**2)
+        adj_dist = D*math.cos(theta)
+        perp_dist = D*math.sin(theta)
+        v_straight = vel_y*math.cos(yaw*math.pi/180) + vel_x*math.cos(math.pi*0.5-yaw*math.pi/180)
+        v_perp = vel_y*math.sin(yaw*math.pi/180) + vel_x*math.sin(math.pi*0.5-yaw*math.pi/180)
+        a_straight = acc_y*math.cos(yaw*math.pi/180) + acc_x*math.cos(math.pi*0.5-yaw*math.pi/180)
+        a_perp = acc_y*math.sin(yaw*math.pi/180) + acc_x*math.sin(math.pi*0.5-yaw*math.pi/180)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([vel_x, vel_y, pos_x, pos_y, yaw]))
+            chosen_action = self._net(torch.FloatTensor([a_straight, a_perp, v_straight, v_perp, adj_dist, perp_dist]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
-            #self._steer_cache = min(0.7, max(-0.7, self._steer_cache))
             self._control.steer = round(self._steer_cache, 1)
             self._control.throttle = chosen_action[1].item()
-            #self._control.steer = 0
-
-
-
-
 
 # ==============================================================================
 # -- CollisionSensor -----------------------------------------------------------
@@ -492,6 +495,7 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
 
         if (client.get_world().get_map().name != "Town03"):
             client.load_world('Town03')
+        
         world = World(client.get_world(), args.filter, phys_settings, cam_path, args.rolename)
         world.camera_manager.toggle_recording()
         controller = KeyboardControl(world, args.autopilot, net, scaler)
@@ -507,12 +511,9 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
-                current_transform = world.player.get_transform()
-                pos = current_transform.location
                 return world.f0, world.eval_target_distance_reward()
             elif result:
                 return
-            
             world.eval_reward()
 
         current_transform = world.player.get_transform()

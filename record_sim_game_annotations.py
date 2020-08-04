@@ -261,10 +261,10 @@ class KeyboardControl(object):
                 pos = current_transform.location
                 world.current_target_x, world.current_target_y, world.current_target_rank = get_new_target(pos.x, pos.y, world.current_target_x, world.current_target_y, world.current_target_rank)
                 world.world.debug.draw_line(world.player.get_location(), carla.Location(world.current_target_x, world.current_target_y, world.player.get_location().z), life_time=world.timestep)
-                self.calculate_steering_throttle(acc.x, acc.y, v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, world)
+                self.calculate_steering_throttle(get_distance(pos.x, pos.y), acc.x, acc.y, v.x, v.y, pos.x, pos.y, current_transform.rotation.yaw, world)
             world.player.apply_control(self._control)
 
-    def calculate_steering_throttle(self, acc_x, acc_y, vel_x, vel_y, pos_x, pos_y, yaw, world):
+    def calculate_steering_throttle(self, displacement, acc_x, acc_y, vel_x, vel_y, pos_x, pos_y, yaw, world):
         phi = math.pi-math.atan((world.current_target_y - pos_y)/(world.current_target_x - pos_x))
         theta = yaw*math.pi/180-phi
         D = math.sqrt((pos_x - world.current_target_x)**2 + (pos_y - world.current_target_y)**2)
@@ -275,7 +275,7 @@ class KeyboardControl(object):
         a_straight = acc_y*math.cos(yaw*math.pi/180) + acc_x*math.cos(math.pi*0.5-yaw*math.pi/180)
         a_perp = acc_y*math.sin(yaw*math.pi/180) + acc_x*math.sin(math.pi*0.5-yaw*math.pi/180)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([a_straight, a_perp, v_straight, v_perp, adj_dist, perp_dist]))
+            chosen_action = self._net(torch.FloatTensor([displacement, v_straight, v_perp, adj_dist, perp_dist]))
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)

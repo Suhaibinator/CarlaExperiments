@@ -1,5 +1,5 @@
 
-from relative_coordinates_simulation import Game # This will be replaced by the CARLA-Tasks module
+from range_finder_sim import Game # This will be replaced by the CARLA-Tasks module
 from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
 
 import os
