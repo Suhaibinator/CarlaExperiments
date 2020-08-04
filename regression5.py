@@ -70,4 +70,4 @@ def find_intersect_dist(pos_x, pos_y, ray):
     distances_left, _ = nbrs_left.kneighbors(ray)
     ind_r = np.argmin(distances_right)
     ind_l = np.argmin(distances_left)
-    return distances_right[ind_r][0] if math.sqrt((pos_x-ray[ind_r][0])**2+(pos_y-ray[ind_r][1])**2) < math.sqrt((pos_x-ray[ind_l][0])**2+(pos_y-ray[ind_l][1])**2) else distances_left[ind_l][0]
+    return max(math.sqrt((pos_x-ray[ind_r][0])**2+(pos_y-ray[ind_r][1])**2), math.sqrt((pos_x-ray[ind_l][0])**2+(pos_y-ray[ind_l][1])**2))
