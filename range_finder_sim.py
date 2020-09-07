@@ -43,7 +43,7 @@ import numpy as np
 
 
 from regression4 import get_distance
-import regression6
+import regression5
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -203,14 +203,14 @@ class KeyboardControl(object):
             world.player.apply_control(self._control)
 
     def calculate_steering_throttle(self, pos_x, pos_y, yaw, world):
-        ray1, ray2, ray3, ray4, ray5 = regression6.generate_rays(pos_x, pos_y, yaw)
-        dist1r, dist1l = regression6.find_intersect_dist(pos_x, pos_y, ray1)
-        dist2r, dist2l = regression6.find_intersect_dist(pos_x, pos_y, ray2)
-        dist3r, dist3l = regression6.find_intersect_dist(pos_x, pos_y, ray3)
-        dist4r, dist4l = regression6.find_intersect_dist(pos_x, pos_y, ray4)
-        dist5r, dist5l = regression6.find_intersect_dist(pos_x, pos_y, ray5)
+        ray1, ray2, ray3, ray4, ray5 = regression5.generate_rays(pos_x, pos_y, yaw)
+        dist1 = regression5.find_intersect_dist(pos_x, pos_y, ray1)
+        dist2 = regression5.find_intersect_dist(pos_x, pos_y, ray2)
+        dist3 = regression5.find_intersect_dist(pos_x, pos_y, ray3)
+        dist4 = regression5.find_intersect_dist(pos_x, pos_y, ray4)
+        dist5 = regression5.find_intersect_dist(pos_x, pos_y, ray5)
         with torch.no_grad():
-            chosen_action = self._net(torch.FloatTensor([dist1r, dist1l, dist2r, dist2l, dist3r, dist3l, dist4r, dist4l, dist5r, dist5l]))
+            chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
             #print("Action: " + str(chosen_action[0]))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
