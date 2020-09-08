@@ -17,7 +17,7 @@ with open('reg5_data', 'rb') as f:
     nbrs_right, nbrs_left = pickle.load(f)
 
 def generate_rays(pos_x, pos_y, yaw):
-    angle = 90-yaw
+    angle = yaw
     angle3 = angle
     angle2 = angle+35
     angle1 = angle+70
