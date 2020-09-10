@@ -214,7 +214,7 @@ class KeyboardControl(object):
             #print("Action: " + str(chosen_action[0]))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
-            self._control.throttle = chosen_action[0].item()
+            self._control.throttle = chosen_action[1].item()
 
 
 
