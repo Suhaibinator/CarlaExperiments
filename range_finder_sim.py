@@ -43,7 +43,7 @@ import numpy as np
 
 
 from regression4 import get_distance
-import regression5
+import regression7 as main_reg
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -159,8 +159,12 @@ class World(object):
         current_loc = self.player.get_transform().location
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
+        to_add = abs(get_distance(current_loc.x, current_loc.y))
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
-        self.f0 += abs(get_distance(current_loc.x, current_loc.y))
+        self.f0 += to_add
+        if to_add > 13:
+            return False
+        return True
         #print("F0 val: " + str(self.f0))
         
     def eval_target_distance_reward(self):
@@ -203,12 +207,12 @@ class KeyboardControl(object):
             world.player.apply_control(self._control)
 
     def calculate_steering_throttle(self, pos_x, pos_y, yaw, world):
-        ray1, ray2, ray3, ray4, ray5 = regression5.generate_rays(pos_x, pos_y, yaw)
-        dist1 = regression5.find_intersect_dist(pos_x, pos_y, ray1)
-        dist2 = regression5.find_intersect_dist(pos_x, pos_y, ray2)
-        dist3 = regression5.find_intersect_dist(pos_x, pos_y, ray3)
-        dist4 = regression5.find_intersect_dist(pos_x, pos_y, ray4)
-        dist5 = regression5.find_intersect_dist(pos_x, pos_y, ray5)
+        ray1, ray2, ray3, ray4, ray5 = main_reg.generate_rays(pos_x, pos_y, yaw)
+        dist1 = main_reg.find_intersect_dist(pos_x, pos_y, ray1)
+        dist2 = main_reg.find_intersect_dist(pos_x, pos_y, ray2)
+        dist3 = main_reg.find_intersect_dist(pos_x, pos_y, ray3)
+        dist4 = main_reg.find_intersect_dist(pos_x, pos_y, ray4)
+        dist5 = main_reg.find_intersect_dist(pos_x, pos_y, ray5)
         with torch.no_grad():
             chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
             #print("Action: " + str(chosen_action[0]))
@@ -262,7 +266,8 @@ def game_loop(args, net, scaler, port, phys_settings):
             elif result:
                 return
             
-            world.eval_reward()
+            if not world.eval_reward():
+                return world.f0+15*(math.ceil(20/timestep)-i), world.eval_target_distance_reward()
 
         f0 = world.f0
         f1 = world.eval_target_distance_reward()
