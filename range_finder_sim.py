@@ -41,9 +41,7 @@ import weakref
 import numpy as np
 
 
-
-from regression4 import get_distance
-import regression7 as main_reg
+import regression5 as main_reg
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -159,7 +157,7 @@ class World(object):
         current_loc = self.player.get_transform().location
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
-        to_add = abs(get_distance(current_loc.x, current_loc.y))
+        to_add = abs(main_reg.get_distance(current_loc.x, current_loc.y))
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
         self.f0 += to_add
         if to_add > 13:
