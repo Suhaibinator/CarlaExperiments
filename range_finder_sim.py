@@ -41,7 +41,7 @@ import weakref
 import numpy as np
 
 
-import regression5 as main_reg
+import regression8 as main_reg
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
