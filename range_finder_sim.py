@@ -28,6 +28,8 @@ except:
 # ==============================================================================
 
 
+early_termination = False
+
 from carla import ColorConverter as cc
 
 import argparse
@@ -160,7 +162,7 @@ class World(object):
         to_add = abs(main_reg.get_distance(current_loc.x, current_loc.y))
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
         self.f0 += to_add
-        if to_add > 13:
+        if to_add > 13 and early_termination:
             return False
         return True
         #print("F0 val: " + str(self.f0))

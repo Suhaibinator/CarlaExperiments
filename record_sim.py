@@ -7,7 +7,7 @@ Created on Thu May 28 02:34:32 2020
 """
 
 
-from record_sim_game import Game
+from record_rangefidner_sim import Game
 
 import time
 
@@ -36,7 +36,6 @@ def genotype_to_phenotype(vector, ns):
         replace_with = vector_copy[0:len_slice].reshape(p.data.size())
         p.data = torch.from_numpy( replace_with )
         vector_copy = np.delete(vector_copy, np.arange(len_slice))    
-
     return net_copy
 
 f = open('ScalerData', 'rb')
@@ -46,21 +45,25 @@ f.close()
 creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & Min: f2
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
+rangefinder_ver = 21
+
 def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num):
     import os
     if context:
         from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
-        with open("context_skill/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+        with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
+        #with open("context_skill_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+        #    cp = pickle.load(file)
     else:
         from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
         
-        with open("skill_only/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+        with open("skill_only_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
     net_sample = S_o_net(n_obs, n_actions)
     pop = cp['population']
     
-    dir_name = ("context_" if context else "skill_") + "gen" + str(gen) + "_steer" + str(steer_mult) + "_torque" + str(torque_mult) + "_ind" + str(ind_num)
+    dir_name = "rangefinder_v" + str(rangefinder_ver) + ("context_" if context else "skill_") + "gen" + str(gen) + "_steer" + str(steer_mult) + "_torque" + str(torque_mult) + "_ind" + str(ind_num)
     os.mkdir('./_out/'+dir_name)
     
     
@@ -95,6 +98,7 @@ def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num):
     base_phys['torque1'] = torque_multiplier*base_phys['torque1']
     
     print(Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2000, base_phys, dir_name))
+    #print(Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2000, base_phys))
     
     import subprocess
     #import glob
