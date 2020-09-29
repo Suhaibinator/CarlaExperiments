@@ -78,8 +78,7 @@ except ImportError:
     raise RuntimeError('cannot import numpy, make sure numpy package is installed')
 
 
-from regression4 import get_distance
-import regression5
+import regression8 as main_reg
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -219,7 +218,7 @@ class World(object):
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
-        self.f0 += abs(get_distance(current_loc.x, current_loc.y))
+        self.f0 += abs(main_reg.get_distance(current_loc.x, current_loc.y))
         #print("F0 val: " + str(self.f0))
         
     def eval_target_distance_reward(self):
@@ -263,31 +262,31 @@ class KeyboardControl(object):
             world.player.apply_control(self._control)
 
     def calculate_steering_throttle(self, pos_x, pos_y, yaw, world):
-        ray1, ray2, ray3, ray4, ray5 = regression5.generate_rays(pos_x, pos_y, yaw)
-        dist1 = regression5.find_intersect_dist(pos_x, pos_y, ray1)
-        dist2 = regression5.find_intersect_dist(pos_x, pos_y, ray2)
-        dist3 = regression5.find_intersect_dist(pos_x, pos_y, ray3)
-        dist4 = regression5.find_intersect_dist(pos_x, pos_y, ray4)
-        dist5 = regression5.find_intersect_dist(pos_x, pos_y, ray5)
+        ray1, ray2, ray3, ray4, ray5 = main_reg.generate_rays(pos_x, pos_y, yaw)
+        dist1 = main_reg.find_intersect_dist(pos_x, pos_y, ray1)
+        dist2 = main_reg.find_intersect_dist(pos_x, pos_y, ray2)
+        dist3 = main_reg.find_intersect_dist(pos_x, pos_y, ray3)
+        dist4 = main_reg.find_intersect_dist(pos_x, pos_y, ray4)
+        dist5 = main_reg.find_intersect_dist(pos_x, pos_y, ray5)
         
         
-        x1, y1 = regression5.find_intersect_point(pos_x, pos_y, ray1)
-        x2, y2 = regression5.find_intersect_point(pos_x, pos_y, ray2)
-        x3, y3 = regression5.find_intersect_point(pos_x, pos_y, ray3)
-        x4, y4 = regression5.find_intersect_point(pos_x, pos_y, ray4)
-        x5, y5 = regression5.find_intersect_point(pos_x, pos_y, ray5)
+        x1r, y1r = main_reg.find_intersect_point(pos_x, pos_y, ray1)
+        x2r, y2r = main_reg.find_intersect_point(pos_x, pos_y, ray2)
+        x3r, y3r = main_reg.find_intersect_point(pos_x, pos_y, ray3)
+        x4r, y4r = main_reg.find_intersect_point(pos_x, pos_y, ray4)
+        x5r, y5r = main_reg.find_intersect_point(pos_x, pos_y, ray5)
         
-        world.world.debug.draw_line(carla.Location(x1, y1, world.player.get_location().z+1), carla.Location(ray1[0][0], ray1[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
-        world.world.debug.draw_line(carla.Location(x2, y2, world.player.get_location().z+1), carla.Location(ray2[0][0], ray2[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
-        world.world.debug.draw_line(carla.Location(x3, y3, world.player.get_location().z+1), carla.Location(ray3[0][0], ray3[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
-        world.world.debug.draw_line(carla.Location(x4, y4, world.player.get_location().z+1), carla.Location(ray4[0][0], ray4[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
-        world.world.debug.draw_line(carla.Location(x5, y5, world.player.get_location().z+1), carla.Location(ray5[0][0], ray5[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
+        world.world.debug.draw_line(carla.Location(x1r, y1r, world.player.get_location().z+1), carla.Location(ray1[0][0], ray1[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
+        world.world.debug.draw_line(carla.Location(x2r, y2r, world.player.get_location().z+1), carla.Location(ray2[0][0], ray2[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
+        world.world.debug.draw_line(carla.Location(x3r, y3r, world.player.get_location().z+1), carla.Location(ray3[0][0], ray3[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
+        world.world.debug.draw_line(carla.Location(x4r, y4r, world.player.get_location().z+1), carla.Location(ray4[0][0], ray4[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
+        world.world.debug.draw_line(carla.Location(x5r, y5r, world.player.get_location().z+1), carla.Location(ray5[0][0], ray5[0][1], world.player.get_location().z+1), life_time=world.timestep, color=carla.Color(0,255,0,0))
         
-        world.world.debug.draw_line(carla.Location(ray1[-1][0], ray1[-1][1], world.player.get_location().z+1), carla.Location(x1, y1, world.player.get_location().z+1), life_time=world.timestep)
-        world.world.debug.draw_line(carla.Location(ray2[-1][0], ray2[-1][1], world.player.get_location().z+1), carla.Location(x2, y2, world.player.get_location().z+1), life_time=world.timestep)
-        world.world.debug.draw_line(carla.Location(ray3[-1][0], ray3[-1][1], world.player.get_location().z+1), carla.Location(x3, y3, world.player.get_location().z+1), life_time=world.timestep)
-        world.world.debug.draw_line(carla.Location(ray4[-1][0], ray4[-1][1], world.player.get_location().z+1), carla.Location(x4, y4, world.player.get_location().z+1), life_time=world.timestep)
-        world.world.debug.draw_line(carla.Location(ray5[-1][0], ray5[-1][1], world.player.get_location().z+1), carla.Location(x5, y5, world.player.get_location().z+1), life_time=world.timestep)
+        world.world.debug.draw_line(carla.Location(ray1[-1][0], ray1[-1][1], world.player.get_location().z+1), carla.Location(x1r, y1r, world.player.get_location().z+1), life_time=world.timestep)
+        world.world.debug.draw_line(carla.Location(ray2[-1][0], ray2[-1][1], world.player.get_location().z+1), carla.Location(x2r, y2r, world.player.get_location().z+1), life_time=world.timestep)
+        world.world.debug.draw_line(carla.Location(ray3[-1][0], ray3[-1][1], world.player.get_location().z+1), carla.Location(x3r, y3r, world.player.get_location().z+1), life_time=world.timestep)
+        world.world.debug.draw_line(carla.Location(ray4[-1][0], ray4[-1][1], world.player.get_location().z+1), carla.Location(x4r, y4r, world.player.get_location().z+1), life_time=world.timestep)
+        world.world.debug.draw_line(carla.Location(ray5[-1][0], ray5[-1][1], world.player.get_location().z+1), carla.Location(x5r, y5r, world.player.get_location().z+1), life_time=world.timestep)
         
         with torch.no_grad():
             chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
@@ -402,8 +401,8 @@ class CameraManager(object):
         self._parent = parent_actor
         self.recording = False
         self._camera_transforms = [
-            carla.Transform(carla.Location(x=-5.5, z=2.8), carla.Rotation(pitch=-15)),
-            carla.Transform(carla.Location(x=1.6, z=3.7))]
+            carla.Transform(carla.Location(x=-8, z=12), carla.Rotation(pitch=-45)),
+            carla.Transform(carla.Location(x=1.0, z=8.7))]
         self.transform_index = 1
         self.sensors = [
             ['sensor.camera.rgb', cc.Raw, 'Camera RGB'],

@@ -42,8 +42,25 @@ import re
 import weakref
 import numpy as np
 
-
 import regression8 as main_reg
+
+reverse = True
+
+target_x = 25
+target_y = 193.7
+
+starting_x = 229.8
+starting_y = 81.1
+starting_yaw = 92.0042
+
+if reverse:
+    t = target_x
+    target_x = starting_x
+    starting_x = t
+    t = target_y
+    target_y = starting_y
+    starting_y = t
+    starting_yaw = 0
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -86,9 +103,6 @@ class World(object):
             self.apply_physics(phys_settings)
         self.recording_enabled = False
         self.recording_start = 0
-        self.current_target_x = 229.564
-        self.current_target_y = 84.43462372
-        self.current_target_rank = 0
         self.f0 = 0
         self.f1 = 0
 
@@ -101,7 +115,7 @@ class World(object):
             blueprint.set_attribute('color', color)
 
         while self.player is None:
-            new_transform = carla.Transform(carla.Location(x=229.8, y=81.1, z=1), carla.Rotation(pitch=0, yaw=92.0042, roll=0))
+            new_transform = carla.Transform(carla.Location(x=starting_x, y=starting_y, z=1), carla.Rotation(pitch=0, yaw=starting_yaw, roll=0))
             self.world.get_spectator().set_transform(new_transform)
             self.player = self.world.try_spawn_actor(blueprint, new_transform)        # Set up the sensors.
 
@@ -169,7 +183,7 @@ class World(object):
         
     def eval_target_distance_reward(self):
         pos = self.player.get_location()
-        return 10*math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+        return 10*math.sqrt((pos.x-target_x)**2+(pos.y-target_y)**2)
 
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
@@ -196,8 +210,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        #print("Distance: " + str((pos.x-25)**2+(pos.y-193.7)**2))
-        if (pos.x-25)**2+((pos.y-193.7)/6)**2 < 20:
+        if (pos.x-target_x)**2+((pos.y-target_y)/6)**2 < 20:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
