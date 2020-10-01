@@ -46,27 +46,7 @@ import regression8 as main_reg
 
 track = 1
 
-target_x = 25
-target_y = 193.7
 
-starting_x = 229.8
-starting_y = 81.1
-starting_yaw = 92.0042
-
-if track == 2:
-    t = target_x
-    target_x = starting_x
-    starting_x = t
-    t = target_y
-    target_y = starting_y
-    starting_y = t
-    starting_yaw = 0
-elif track == 3:
-    starting_x = 7.55
-    starting_y = -66
-    yaw = 90
-    target_x = 78.7
-    target_y = -49.6
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -91,7 +71,7 @@ def get_actor_display_name(actor, truncate=250):
 
 
 class World(object):
-    def __init__(self, carla_world, actor_filter, phys_settings, actor_role_name='hero'):
+    def __init__(self, carla_world, actor_filter, phys_settings, track_num, actor_role_name='hero'):
         self.world = carla_world
         self.actor_role_name = actor_role_name
         self.map = self.world.get_map()
@@ -104,6 +84,7 @@ class World(object):
         self._weather_presets = find_weather_presets()
         self._weather_index = 0
         self._actor_filter = actor_filter
+        self.set_track(track_num)
         self.restart()
         if phys_settings is not None:
             self.apply_physics(phys_settings)
@@ -121,11 +102,36 @@ class World(object):
             blueprint.set_attribute('color', color)
 
         while self.player is None:
-            new_transform = carla.Transform(carla.Location(x=starting_x, y=starting_y, z=1), carla.Rotation(pitch=0, yaw=starting_yaw, roll=0))
+            new_transform = carla.Transform(carla.Location(x=self.starting_x, y=self.starting_y, z=1), carla.Rotation(pitch=0, yaw=self.starting_yaw, roll=0))
             self.world.get_spectator().set_transform(new_transform)
             self.player = self.world.try_spawn_actor(blueprint, new_transform)        # Set up the sensors.
 
         #self.player.set_autopilot(True)
+    
+    
+    def set_track(self, track_num):
+        
+        self.target_x = 25
+        self.target_y = 193.7
+        
+        self.starting_x = 229.8
+        self.starting_y = 81.1
+        self.starting_yaw = 92.0042
+        
+        if track == 2:
+            t = self.target_x
+            self.target_x = self.starting_x
+            self.starting_x = t
+            t = self.target_y
+            self.target_y = self.starting_y
+            self.starting_y = t
+            self.starting_yaw = 0
+        elif track == 3:
+            self.starting_x = 7.55
+            self.starting_y = -66
+            self.yaw = 90
+            self.target_x = 78.7
+            self.target_y = -49.6
     
     def apply_physics(self, phys_settings):
         self.world.tick()
@@ -189,7 +195,7 @@ class World(object):
         
     def eval_target_distance_reward(self):
         pos = self.player.get_location()
-        return 10*math.sqrt((pos.x-target_x)**2+(pos.y-target_y)**2)
+        return 10*math.sqrt((pos.x-self.target_x)**2+(pos.y-self.target_y)**2)
 
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
@@ -216,7 +222,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        if (pos.x-target_x)**2+((pos.y-target_y))**2 < 10:
+        if (pos.x-self.target_x)**2+((pos.y-self.target_y))**2 < 10:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
