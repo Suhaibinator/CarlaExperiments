@@ -61,6 +61,8 @@ except:
 # -- imports -------------------------------------------------------------------
 # ==============================================================================
 
+early_termination = False
+
 from carla import ColorConverter as cc
 
 import argparse
@@ -71,14 +73,31 @@ import math
 import random
 import re
 import weakref
-
-try:
-    import numpy as np
-except ImportError:
-    raise RuntimeError('cannot import numpy, make sure numpy package is installed')
-
+import numpy as np
 
 import regression8 as main_reg
+
+track = 3
+
+target_x = 25	
+target_y = 193.7	
+starting_x = 229.8	
+starting_y = 81.1	
+starting_yaw = 92.0042	
+if track == 2:	
+    t = target_x	
+    target_x = starting_x	
+    starting_x = t	
+    t = target_y	
+    target_y = starting_y	
+    starting_y = t	
+    starting_yaw = 0	
+elif track == 3:	
+    starting_x = 7.55	
+    starting_y = -66	
+    yaw = 90	
+    target_x = 78.7	
+    target_y = -49.6
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -124,10 +143,6 @@ class World(object):
         self.f0 = 0
         self.f1 = 0
         self.recording_start = 0
-        self.current_target_x = 229.564
-        self.current_target_y = 84.43462372
-        self.current_target_rank = 0
-
 
     def restart(self):
         # Keep same camera config if the camera manager exists.
@@ -141,7 +156,7 @@ class World(object):
             blueprint.set_attribute('color', color)
         # Spawn the player.
         while self.player is None:
-            new_transform = carla.Transform(carla.Location(x=229.8, y=81.1, z=1), carla.Rotation(pitch=0, yaw=92.0042, roll=0))
+            new_transform = carla.Transform(carla.Location(x=starting_x, y=starting_y, z=1), carla.Rotation(pitch=0, yaw=starting_yaw, roll=0))
             self.world.get_spectator().set_transform(new_transform)
             self.player = self.world.try_spawn_actor(blueprint, new_transform)        # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player)
@@ -217,13 +232,15 @@ class World(object):
         current_loc = self.player.get_transform().location
         v = self.player.get_velocity()
         speed = 3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)
+        to_add = abs(main_reg.get_distance(current_loc.x, current_loc.y))
         self.f0 += 10 if current_loc.y < 81 or speed < 5.0 else 0
-        self.f0 += abs(main_reg.get_distance(current_loc.x, current_loc.y))
+        self.f0 += to_add
+        return True
         #print("F0 val: " + str(self.f0))
         
     def eval_target_distance_reward(self):
         pos = self.player.get_location()
-        return 10*math.sqrt((pos.x-25)**2+(pos.y-193.7)**2)
+        return 10*math.sqrt((pos.x-target_x)**2+(pos.y-target_y)**2)
         
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
@@ -234,8 +251,8 @@ class KeyboardControl(object):
     def __init__(self, world, start_in_autopilot, net, scaler):
         self._net = net
         self._scaler = scaler
-        self._autopilot_enabled = start_in_autopilot
         self.world = world
+        self._autopilot_enabled = start_in_autopilot
         if isinstance(world.player, carla.Vehicle):
             self._control = carla.VehicleControl()
             #world.player.set_autopilot(self._autopilot_enabled)
@@ -251,8 +268,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        #print("Distance: " + str((pos.x-25)**2+(pos.y-193.7)**2))
-        if (pos.x-25)**2+((pos.y-193.7)/6)**2 < 20:
+        if (pos.x-target_x)**2+((pos.y-target_y)/6)**2 < 20:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):

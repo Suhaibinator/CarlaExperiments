@@ -44,7 +44,7 @@ import numpy as np
 
 import regression8 as main_reg
 
-reverse = True
+track = 1
 
 target_x = 25
 target_y = 193.7
@@ -53,7 +53,7 @@ starting_x = 229.8
 starting_y = 81.1
 starting_yaw = 92.0042
 
-if reverse:
+if track == 2:
     t = target_x
     target_x = starting_x
     starting_x = t
@@ -61,6 +61,12 @@ if reverse:
     target_y = starting_y
     starting_y = t
     starting_yaw = 0
+elif track == 3:
+    starting_x = 7.55
+    starting_y = -66
+    yaw = 90
+    target_x = 78.7
+    target_y = -49.6
 
 # ==============================================================================
 # -- Global functions ----------------------------------------------------------
@@ -210,7 +216,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        if (pos.x-target_x)**2+((pos.y-target_y)/6)**2 < 20:
+        if (pos.x-target_x)**2+((pos.y-target_y))**2 < 10:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
