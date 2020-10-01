@@ -45,9 +45,7 @@ f.close()
 creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & Min: f2
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
-rangefinder_ver = 21
-
-def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num):
+def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num, rangefinder_ver):
     import os
     if context:
         from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
