@@ -238,7 +238,7 @@ class KeyboardControl(object):
         with torch.no_grad():
             chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
             #print("Action: " + str(chosen_action[0]))
-            self._steer_cache = chosen_action[0].item()
+            self._steer_cache = chosen_action[0].item()/2
             self._control.steer = round(self._steer_cache, 1)
             self._control.throttle = chosen_action[1].item()
 
