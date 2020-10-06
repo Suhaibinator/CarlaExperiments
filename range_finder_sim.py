@@ -44,8 +44,6 @@ import numpy as np
 
 import regression8 as main_reg
 
-track = 1
-
 
 
 # ==============================================================================
@@ -109,7 +107,7 @@ class World(object):
         #self.player.set_autopilot(True)
     
     
-    def set_track(self, track_num):
+    def set_track(self, track):
         
         self.target_x = 25
         self.target_y = 193.7
@@ -222,13 +220,12 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        if (pos.x-self.target_x)**2+((pos.y-self.target_y))**2 < 10:
+        if (pos.x-world.target_x)**2+((pos.y-world.target_y))**2 < 10:
             return 5
         if not self._autopilot_enabled:
-            if isinstance(self._control, carla.VehicleControl):
-                current_transform = world.player.get_transform()
-                pos = current_transform.location
-                self.calculate_steering_throttle(pos.x, pos.y, current_transform.rotation.yaw, world)
+            current_transform = world.player.get_transform()
+            pos = current_transform.location
+            self.calculate_steering_throttle(pos.x, pos.y, current_transform.rotation.yaw, world)
             world.player.apply_control(self._control)
 
     def calculate_steering_throttle(self, pos_x, pos_y, yaw, world):
@@ -243,7 +240,9 @@ class KeyboardControl(object):
             #print("Action: " + str(chosen_action[0]))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
-            self._control.throttle = chosen_action[1].item()
+            out_throt = chosen_action[1].item()
+            self._control.throttle = 0 if out_throt < 0 else out_throt
+            self._control.brake = 0 if out_throt > 0 else -out_throt
 
 
 
@@ -252,7 +251,7 @@ class KeyboardControl(object):
 # ==============================================================================
 
 
-def game_loop(args, net, scaler, port, phys_settings):
+def game_loop(args, net, scaler, port, phys_settings, track_num):
     world = None
     
     timestep = 0.1
@@ -272,7 +271,7 @@ def game_loop(args, net, scaler, port, phys_settings):
 
         #if (client.get_world().get_map().name != "Town03"):
         #    client.load_world('Town03')
-        world = World(client.get_world(), args.filter, phys_settings, args.rolename)
+        world = World(client.get_world(), args.filter, phys_settings, track_num, args.rolename)
         
         controller = KeyboardControl(world, args.autopilot, net, scaler)
 
@@ -362,9 +361,10 @@ def Game(neural_net, scaler, port, phys_settings):
 
     try:
 
-        f0, f1 = game_loop(args, neural_net, scaler, port, phys_settings)
+        f0, f1 = game_loop(args, neural_net, scaler, port, phys_settings, 1)
+        f0_r, f1_r = game_loop(args, neural_net, scaler, port, phys_settings, 2)
         print
 
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')
-    return f0, f1
+    return f0+f0_r, f1+f1_r
