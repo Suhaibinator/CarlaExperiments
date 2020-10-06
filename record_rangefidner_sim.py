@@ -268,7 +268,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        if (pos.x-target_x)**2+((pos.y-target_y)/6)**2 < 20:
+        if (pos.x-target_x)**2+((pos.y-target_y))**2 < 10:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
@@ -307,7 +307,7 @@ class KeyboardControl(object):
         with torch.no_grad():
             chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
             #print("Action: " + str(chosen_action))
-            self._steer_cache = chosen_action[0].item()
+            self._steer_cache = chosen_action[0].item()/2
             self._control.steer = round(self._steer_cache, 1)
             self._control.throttle = chosen_action[1].item()
 
