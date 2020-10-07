@@ -308,7 +308,7 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
 # ==============================================================================
 
 
-def Game(neural_net, scaler, port, phys_settings):
+def Game(neural_net, scaler, port, phys_settings, track):
     argparser = argparse.ArgumentParser(
         description='CARLA Manual Control Client')
     argparser.add_argument(
@@ -359,7 +359,7 @@ def Game(neural_net, scaler, port, phys_settings):
 
     try:
 
-        f0, f1 = game_loop(args, neural_net, scaler, port, phys_settings, 1)
+        f0, f1 = game_loop(args, neural_net, scaler, port, phys_settings, track)
         print
 
     except KeyboardInterrupt:

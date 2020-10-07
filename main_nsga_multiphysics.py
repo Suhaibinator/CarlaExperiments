@@ -33,6 +33,8 @@ MU = 48
 CXPB = 0.9
 BOUND_LOW, BOUND_UP = -5.0, 5.0
 
+track = 1
+
 n_obs = 5 # number of inputs
 n_actions = 2 # number of outputs
 net_sample = S_o_net(n_obs, n_actions)
@@ -84,7 +86,7 @@ def eval_jobs(job):
         # i[0] is the index of the individual in invalid_ind
         # i[1] is the actual reference to that individual
         # i[2] is the physics parameters on which to evaluate
-        f0, f1 = Game(genotype_to_phenotype(i[1]), scaler, job[0], i[2])
+        f0, f1 = Game(genotype_to_phenotype(i[1]), scaler, job[0], i[2], track)
         result.append((i[0], f0, f1))
     return result
 
