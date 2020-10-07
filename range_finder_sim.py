@@ -360,9 +360,8 @@ def Game(neural_net, scaler, port, phys_settings):
     try:
 
         f0, f1 = game_loop(args, neural_net, scaler, port, phys_settings, 1)
-        f0_r, f1_r = game_loop(args, neural_net, scaler, port, phys_settings, 2)
         print
 
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')
-    return f0+f0_r, f1+f1_r
+    return f0, f1
