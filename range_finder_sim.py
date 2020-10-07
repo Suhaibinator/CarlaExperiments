@@ -88,6 +88,8 @@ class World(object):
             self.apply_physics(phys_settings)
         self.recording_enabled = False
         self.recording_start = 0
+        self.last_steer = 0
+        self.total_wobble = 0
         self.f0 = 0
         self.f1 = 0
 
@@ -240,6 +242,8 @@ class KeyboardControl(object):
             #print("Action: " + str(chosen_action[0]))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
+            world.total_wobble += abs(world.last_steer-self._control.steer)
+            world.last_steer = self._control.steer
             self._control.throttle = chosen_action[1].item()
 
 
@@ -284,14 +288,14 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
-                return world.f0, world.eval_target_distance_reward()
+                return world.f0+3*world.total_wobble, world.eval_target_distance_reward()
             elif result:
                 return
             
             if not world.eval_reward():
                 return world.f0+15*(math.ceil(20/timestep)-i), world.eval_target_distance_reward()
 
-        f0 = world.f0
+        f0 = world.f0+3*world.total_wobble
         f1 = world.eval_target_distance_reward()
     finally:
 
@@ -300,7 +304,8 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
 
         if world is not None:
             world.destroy()
-
+    #print("Total wobble: " + str(world.total_wobble))
+    #print("f0: " + str(f0))
     return f0, f1
 
 # ==============================================================================
