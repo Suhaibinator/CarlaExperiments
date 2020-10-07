@@ -77,7 +77,7 @@ import numpy as np
 
 import regression8 as main_reg
 
-track = 3
+track = 1
 
 target_x = 25	
 target_y = 193.7	
@@ -309,7 +309,9 @@ class KeyboardControl(object):
             #print("Action: " + str(chosen_action))
             self._steer_cache = chosen_action[0].item()
             self._control.steer = round(self._steer_cache, 1)
-            self._control.throttle = chosen_action[1].item()
+            out_throt = chosen_action[1].item()
+            self._control.throttle = 0 if out_throt < 0 else out_throt
+            self._control.brake = 0 if out_throt > 0 else -out_throt
 
 # ==============================================================================
 # -- CollisionSensor -----------------------------------------------------------
