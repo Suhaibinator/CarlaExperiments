@@ -29,6 +29,7 @@ except:
 
 
 early_termination = False
+wobble_coeff = 5.5
 
 from carla import ColorConverter as cc
 
@@ -288,14 +289,14 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
-                return world.f0+3*world.total_wobble, world.eval_target_distance_reward()
+                return world.f0+wobble_coeff*world.total_wobble, world.eval_target_distance_reward()
             elif result:
                 return
             
             if not world.eval_reward():
                 return world.f0+15*(math.ceil(20/timestep)-i), world.eval_target_distance_reward()
 
-        f0 = world.f0+3*world.total_wobble
+        f0 = world.f0+wobble_coeff*world.total_wobble
         f1 = world.eval_target_distance_reward()
     finally:
 

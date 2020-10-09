@@ -95,7 +95,7 @@ def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num, rangefin
     
     base_phys['torque1'] = torque_multiplier*base_phys['torque1']
     
-    print(Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2000, base_phys, dir_name))
+    print(Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2004, base_phys, dir_name))
     #print(Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2000, base_phys))
     
     import subprocess

@@ -77,7 +77,7 @@ import numpy as np
 
 import regression8 as main_reg
 
-track = 3
+track = 1
 
 target_x = 25	
 target_y = 193.7	
