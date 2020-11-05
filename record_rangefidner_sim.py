@@ -75,9 +75,9 @@ import re
 import weakref
 import numpy as np
 
-import regression8 as main_reg
+import regression9 as main_reg
 
-track = 1
+track = 3
 
 target_x = 25	
 target_y = 193.7	
@@ -268,7 +268,7 @@ class KeyboardControl(object):
     def parse_events(self, client, world):
         current_transform = world.player.get_transform()
         pos = current_transform.location
-        if (pos.x-target_x)**2+((pos.y-target_y)/6)**2 < 20:
+        if (pos.x-target_x)**2+((pos.y-target_y))**2 < 10:
             return 5
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
@@ -303,6 +303,8 @@ class KeyboardControl(object):
         world.world.debug.draw_line(carla.Location(ray3[-1][0], ray3[-1][1], world.player.get_location().z+1), carla.Location(x3r, y3r, world.player.get_location().z+1), life_time=world.timestep)
         world.world.debug.draw_line(carla.Location(ray4[-1][0], ray4[-1][1], world.player.get_location().z+1), carla.Location(x4r, y4r, world.player.get_location().z+1), life_time=world.timestep)
         world.world.debug.draw_line(carla.Location(ray5[-1][0], ray5[-1][1], world.player.get_location().z+1), carla.Location(x5r, y5r, world.player.get_location().z+1), life_time=world.timestep)
+        
+        world.world.debug.draw_string(carla.Location(ray5[-1][0], ray5[-1][1], world.player.get_location().z+6), str(math.sqrt(world.player.get_velocity().x**2 + world.player.get_velocity().y**2)), draw_shadow=False, life_time=world.timestep*2)
         
         with torch.no_grad():
             chosen_action = self._net(torch.FloatTensor([dist1, dist2, dist3, dist4, dist5]))
@@ -517,7 +519,7 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             self.__dict__.update(adict)
     args = Bunch({'autopilot':False, 'debug':False, 'filter':'vehicle.tesla.model3', 'height':720, 'host':'127.0.0.1', 'port':2000, 'res':'1280x720', 'rolename':'hero', 'width':1280})
     """
-
+    
     try:
         client = carla.Client(args.host, args.port)
         client.set_timeout(20.0)
@@ -531,7 +533,22 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
         world.timestep = timestep
         world.camera_manager.toggle_recording()
         controller = KeyboardControl(world, args.autopilot, net, scaler)
+        import pickle
+        if track != 3:
+            with open('reg8.3_data', 'rb') as f:
+                nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
+            for i in range(1, len(midLane)):
+                world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=20, color=carla.Color(0,125,155,0))    
+        else:
+            with open('reg8.4_data', 'rb') as f:
+                nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
+            for i in range(1, len(midLane)):
+                world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=25, color=carla.Color(0,125,155,0))
+                world.world.debug.draw_line(carla.Location(leftLane[i-1][0], leftLane[i-1][1], 2), carla.Location(leftLane[i][0], leftLane[i][1], 2), life_time=25, color=carla.Color(0,250,155,0))
+                world.world.debug.draw_line(carla.Location(rightLane[i-1][0], rightLane[i-1][1], 2), carla.Location(rightLane[i][0], rightLane[i][1], 2), life_time=25, color=carla.Color(205,125,155,0))
 
+
+        data = []
         settings = world.world.get_settings()
         if not settings.synchronous_mode or settings.fixed_delta_seconds != timestep:
             settings.synchronous_mode = True
@@ -539,11 +556,13 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             world.world.apply_settings(settings)
 
 
-        for i in range(math.ceil(25/timestep)):
+        for i in range(math.ceil(35/timestep)):
             world.world.tick()
             result = controller.parse_events(client, world)
-            
+            data.append((world.player.get_location().x, world.player.get_location().y, world.player.get_transform().rotation.yaw))
             if result == 5:
+                with open('loc_data', 'wb') as f:
+                    pickle.dump(data, f)
                 return world.f0, world.eval_target_distance_reward()
             elif result:
                 return
@@ -560,6 +579,10 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
 
         if world is not None:
             world.destroy()
+    import os
+    print(os.getcwd())
+    with open('loc_data', 'wb') as f:
+        pickle.dump(data, f)
 
     return f0, f1
 

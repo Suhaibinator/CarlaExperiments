@@ -27,7 +27,7 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 15
+NUM_WORKERS = 10
 NGEN = 900
 MU = 48
 CXPB = 0.9
@@ -44,9 +44,9 @@ NDIM = net_sample.computeTotalNumberOfParameters()
 base_phys = {'flwf': 3.5, 'frwf': 3.5, 'rlwf': 3.5, 'rrwf': 3.5, 'mass': 2090,
              'flwmsa': 70, 'frwmsa': 70, 'speed': 60, 'steer1': 0.9,
              'steer2': 0.8, 'steer3': 0.7, 'torque1': 500.76} 
-percent = 0.1 # +/- 20% variation of the nominal task parameters
-REPEATS = 3
-dimensions = [('steer1', 'steer2', 'steer3'), ('torque1',)]
+percent = 0#.1 # +/- 20% variation of the nominal task parameters
+REPEATS = 1
+dimensions = [('steer1', 'steer2', 'steer3')]#, ('torque1',)]
 
 
 #-----------------------------------------------------------------------------
@@ -87,7 +87,8 @@ def eval_jobs(job):
         # i[1] is the actual reference to that individual
         # i[2] is the physics parameters on which to evaluate
         f0, f1 = Game(genotype_to_phenotype(i[1]), scaler, job[0], i[2], track)
-        result.append((i[0], f0, f1))
+        f10, f11 = Game(genotype_to_phenotype(i[1]), scaler, job[0], i[2], 2)
+        result.append((i[0], f0+f10, f1+f11))
     return result
 
 #-----------------------------------------------------------------------------
@@ -119,7 +120,7 @@ def main():
     
     # Uncomment this block of code to resume evolution from a saved file
     """
-    with open("gen218_CS1_checkpoint.pkl","rb") as file:
+    with open("gen136_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]

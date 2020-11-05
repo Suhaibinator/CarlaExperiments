@@ -43,7 +43,7 @@ import re
 import weakref
 import numpy as np
 
-import regression8 as main_reg
+import regression9 as main_reg
 
 
 
@@ -259,6 +259,7 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
     
     timestep = 0.1
 
+
     """
     class Bunch(object):
         def __init__(self, adict):
@@ -285,7 +286,7 @@ def game_loop(args, net, scaler, port, phys_settings, track_num):
             world.world.apply_settings(settings)
 
 
-        for i in range(math.ceil(20/timestep)):
+        for i in range(math.ceil(20/timestep)):            
             world.world.tick()
             result = controller.parse_events(client, world)
             if result == 5:
