@@ -10,8 +10,8 @@ import math
 import numpy as np
 import pickle
 
-line_dist = 10
-num_points = 321 # This should be an odd number
+line_dist = 25
+num_points = 351 # This should be an odd number
 
 mid_ind = int(num_points/2.0)
 

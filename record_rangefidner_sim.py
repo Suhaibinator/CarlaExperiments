@@ -74,10 +74,11 @@ import random
 import re
 import weakref
 import numpy as np
+import pickle
 
 import regression9 as main_reg
 
-track = 3
+track = 1
 
 target_x = 25	
 target_y = 193.7	
@@ -511,7 +512,7 @@ class CameraManager(object):
 def game_loop(args, net, scaler, port, phys_settings, cam_path):
     world = None
     
-    timestep = 0.1
+    timestep = 1/30
 
     """
     class Bunch(object):
@@ -533,22 +534,24 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
         world.timestep = timestep
         world.camera_manager.toggle_recording()
         controller = KeyboardControl(world, args.autopilot, net, scaler)
-        import pickle
-        if track != 3:
-            with open('reg8.3_data', 'rb') as f:
-                nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
-            for i in range(1, len(midLane)):
-                world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=20, color=carla.Color(0,125,155,0))    
-        else:
-            with open('reg8.4_data', 'rb') as f:
-                nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
-            for i in range(1, len(midLane)):
-                world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=25, color=carla.Color(0,125,155,0))
-                world.world.debug.draw_line(carla.Location(leftLane[i-1][0], leftLane[i-1][1], 2), carla.Location(leftLane[i][0], leftLane[i][1], 2), life_time=25, color=carla.Color(0,250,155,0))
-                world.world.debug.draw_line(carla.Location(rightLane[i-1][0], rightLane[i-1][1], 2), carla.Location(rightLane[i][0], rightLane[i][1], 2), life_time=25, color=carla.Color(205,125,155,0))
+        if False:
+            
+            if track != 3:
+                with open('reg8.3_data', 'rb') as f:
+                    nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
+                for i in range(1, len(midLane)):
+                    world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=20, color=carla.Color(0,125,155,0))    
+            else:
+                with open('reg8.4_data', 'rb') as f:
+                    nbrs_right, rightLane, nbrs_left, leftLane, midLane, center_nbrs = pickle.load(f)
+                for i in range(1, len(midLane)):
+                    world.world.debug.draw_line(carla.Location(midLane[i-1][0], midLane[i-1][1], 2), carla.Location(midLane[i][0], midLane[i][1], 2), life_time=25, color=carla.Color(0,125,155,0))
+                    world.world.debug.draw_line(carla.Location(leftLane[i-1][0], leftLane[i-1][1], 2), carla.Location(leftLane[i][0], leftLane[i][1], 2), life_time=25, color=carla.Color(0,250,155,0))
+                    world.world.debug.draw_line(carla.Location(rightLane[i-1][0], rightLane[i-1][1], 2), carla.Location(rightLane[i][0], rightLane[i][1], 2), life_time=25, color=carla.Color(205,125,155,0))
 
 
         data = []
+        vel_data = []
         settings = world.world.get_settings()
         if not settings.synchronous_mode or settings.fixed_delta_seconds != timestep:
             settings.synchronous_mode = True
@@ -560,9 +563,12 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             world.world.tick()
             result = controller.parse_events(client, world)
             data.append((world.player.get_location().x, world.player.get_location().y, world.player.get_transform().rotation.yaw))
+            data.append((world.player.get_velocity().x, world.player.get_velocity().y))
             if result == 5:
                 with open('loc_data', 'wb') as f:
                     pickle.dump(data, f)
+                with open('vel_data', 'wb') as f:
+                    pickle.dump(vel_data, f)
                 return world.f0, world.eval_target_distance_reward()
             elif result:
                 return
@@ -583,7 +589,8 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
     print(os.getcwd())
     with open('loc_data', 'wb') as f:
         pickle.dump(data, f)
-
+    with open('vel_data', 'wb') as f:
+        pickle.dump(vel_data, f)
     return f0, f1
 
 # ==============================================================================

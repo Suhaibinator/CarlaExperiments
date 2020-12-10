@@ -51,12 +51,9 @@ def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num, rangefin
         from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
         with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
-        #with open("context_skill_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
-        #    cp = pickle.load(file)
     else:
         from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
-        
-        with open("skill_only_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+        with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
     net_sample = S_o_net(n_obs, n_actions)
     pop = cp['population']
@@ -104,7 +101,7 @@ def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num, rangefin
     
     SCREENWIDTH  = 1280
     SCREENHEIGHT = 720
-    FPS          = 10
+    FPS          = 30
     
     orig_dir = os.getcwd()
     os.chdir('./_out/' + dir_name)

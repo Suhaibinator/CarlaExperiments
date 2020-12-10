@@ -14,8 +14,8 @@ creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & 
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
 
-rangefinder_ver = 34
-gen = 507
+rangefinder_ver = 40
+gen = 400
 
 def get_best_ind_num(rangefinder_version, gen):
     with open('./rangefinder_v' + str(rangefinder_version) + '/gen' + str(gen) + '_CS1_checkpoint.pkl', 'rb') as f:

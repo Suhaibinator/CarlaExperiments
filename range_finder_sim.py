@@ -119,7 +119,14 @@ class World(object):
         self.starting_y = 81.1
         self.starting_yaw = 92.0042
         
-        if track == 2:
+        
+        if track == 3 or track == 4:
+            self.starting_x = 7.55
+            self.starting_y = -66
+            self.yaw = 90
+            self.target_x = 78.7
+            self.target_y = -49.6
+        if track == 2 or track == 4:
             t = self.target_x
             self.target_x = self.starting_x
             self.starting_x = t
@@ -127,13 +134,6 @@ class World(object):
             self.target_y = self.starting_y
             self.starting_y = t
             self.starting_yaw = 0
-        elif track == 3:
-            self.starting_x = 7.55
-            self.starting_y = -66
-            self.yaw = 90
-            self.target_x = 78.7
-            self.target_y = -49.6
-    
     def apply_physics(self, phys_settings):
         self.world.tick()
         """
@@ -257,7 +257,7 @@ class KeyboardControl(object):
 def game_loop(args, net, scaler, port, phys_settings, track_num):
     world = None
     
-    timestep = 0.1
+    timestep = 1/30
 
 
     """

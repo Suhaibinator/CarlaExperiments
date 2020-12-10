@@ -7,7 +7,7 @@ Created on Thu Sep 17 17:32:40 2020
 """
 
 
-from range_finder_sim import Game
+from eval_ind_3obj import Game
 
 import time
 
@@ -22,6 +22,7 @@ import numpy as np
 n_obs = 5 # number of inputs
 n_actions = 2 # number of outputs
 track_num = 1
+context_skill = True
 
 def genotype_to_phenotype(vector, ns):
     # net_sample is needed to build the net from the vector
@@ -45,8 +46,15 @@ f.close()
 creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & Min: f2
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
-rangefinder_ver = 33
-gen = 300
+gen = 400
+rangefinder_ver = 113
+if rangefinder_ver == 112:
+    context_skill = True
+    gen = 367
+else:
+    context_skill = False
+    gen = 125
+
 
 def get_best_ind_num(rangefinder_version, gen):
     with open('./rangefinder_v' + str(rangefinder_version) + '/gen' + str(gen) + '_CS1_checkpoint.pkl', 'rb') as f:
@@ -69,12 +77,9 @@ def eval_ind(gen, context, steer_mult, torque_mult, ind_num):
         from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
         with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
-        #with open("context_skill_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
-        #    cp = pickle.load(file)
     else:
         from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
-        
-        with open("skill_only_six/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+        with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
     net_sample = S_o_net(n_obs, n_actions)
     pop = cp['population']
@@ -110,13 +115,13 @@ def eval_ind(gen, context, steer_mult, torque_mult, ind_num):
     
     base_phys['torque1'] = torque_multiplier*base_phys['torque1']
     
-    return Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2000, base_phys, track_num)
+    return Game(genotype_to_phenotype(pop[ind_num], net_sample), scaler, 2006, base_phys, track_num)
 
 ind = get_best_ind_num(rangefinder_ver, gen)
 results = {}
-for i in np.linspace(0.75, 1.25, 14):
-    for j in np.linspace(0.75, 1.25, 14):
+for i in np.linspace(0.75, 1.25, 25):
+    for j in np.linspace(0.75, 1.25, 25):
         print('i' + str(i) + 'j' + str(j))
-        results[(i, j)] = eval_ind(gen, True, i, j, ind)
-with open('contour_results_v' + str(rangefinder_ver) + '_2', 'wb') as f:
+        results[(i, j)] = eval_ind(gen, context_skill, i, j, ind)
+with open('contour_results_v' + str(rangefinder_ver) + '_gen' + str(gen) + '_Track' + str(track_num) + '_' + ("cs" if context_skill else "sonly"), 'wb') as f:
     pickle.dump(results, f)
