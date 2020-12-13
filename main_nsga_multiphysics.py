@@ -1,6 +1,6 @@
 
 from range_finder_sim import Game # This will be replaced by the CARLA-Tasks module
-from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
+from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
 
 import os
 import math
@@ -27,7 +27,7 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 10
+NUM_WORKERS = 15
 NGEN = 900
 MU = 48
 CXPB = 0.9
@@ -44,9 +44,9 @@ NDIM = net_sample.computeTotalNumberOfParameters()
 base_phys = {'flwf': 3.5, 'frwf': 3.5, 'rlwf': 3.5, 'rrwf': 3.5, 'mass': 2090,
              'flwmsa': 70, 'frwmsa': 70, 'speed': 60, 'steer1': 0.9,
              'steer2': 0.8, 'steer3': 0.7, 'torque1': 500.76} 
-percent = 0#.1 # +/- 20% variation of the nominal task parameters
-REPEATS = 1
-dimensions = [('steer1', 'steer2', 'steer3')]#, ('torque1',)]
+percent = 0.15 # +/- 20% variation of the nominal task parameters
+REPEATS = 6
+dimensions = [('steer1', 'steer2', 'steer3'), ('torque1',)]
 
 
 #-----------------------------------------------------------------------------
@@ -73,8 +73,8 @@ def gen_tasks():
     for dimension in dimensions:
         for i in range(-1, REPEATS-1):
             current_phys = base_phys.copy()
-            #multiplier = random.uniform(1-percent, 1+percent)
-            multiplier = 1+percent*i
+            multiplier = random.uniform(1-percent, 1+percent)
+            #multiplier = 1+percent*i
             for parameter in dimension:
                 current_phys[parameter]*=multiplier
             tasks.append(current_phys)
@@ -119,14 +119,14 @@ def main():
     pop = toolbox.population(n=MU)
     
     # Uncomment this block of code to resume evolution from a saved file
-    """
-    with open("gen136_CS1_checkpoint.pkl","rb") as file:
+    
+    with open("gen4_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
     gen = cp["generation"]
     random.setstate(cp["rndstate"])
-    """
+    
     
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid] # Genotype
