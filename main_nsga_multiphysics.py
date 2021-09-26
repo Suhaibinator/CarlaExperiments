@@ -1,6 +1,6 @@
 
 from range_finder_sim import Game # This will be replaced by the CARLA-Tasks module
-from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
+from neural_net_torch import Context_only_Net as S_o_net # Skill-only Model
 
 import os
 import math
@@ -27,7 +27,7 @@ f.close()
 
 #-----------------------------------------------------------------------------
 # Hyperparameters
-NUM_WORKERS = 15
+NUM_WORKERS = 9
 NGEN = 900
 MU = 48
 CXPB = 0.9
@@ -119,14 +119,14 @@ def main():
     pop = toolbox.population(n=MU)
     
     # Uncomment this block of code to resume evolution from a saved file
-    
-    with open("gen4_CS1_checkpoint.pkl","rb") as file:
+    """
+    with open("gen8_CS1_checkpoint.pkl","rb") as file:
         cp = pickle.load(file)
     pop = cp["population"]
     logbook = cp["logbook"]
     gen = cp["generation"]
     random.setstate(cp["rndstate"])
-    
+    """
     
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in pop if not ind.fitness.valid] # Genotype

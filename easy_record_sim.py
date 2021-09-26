@@ -13,9 +13,17 @@ from deap import base, creator
 creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & Min: f2
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
+net_type = 's' # options are 'cs', 's', and 'c'
 
-rangefinder_ver = 40
-gen = 400
+rangefinder_ver = 200
+gen = 71
+if net_type == 'c':
+    rangefinder_ver = 301
+    gen = 250
+elif net_type == 'cs':
+    rangefinder_ver = 201
+    gen = 262
+
 
 def get_best_ind_num(rangefinder_version, gen):
     with open('./rangefinder_v' + str(rangefinder_version) + '/gen' + str(gen) + '_CS1_checkpoint.pkl', 'rb') as f:
@@ -36,4 +44,4 @@ ind = get_best_ind_num(rangefinder_ver, gen)
 
 from record_sim import record_sim_to_video
 
-record_sim_to_video(gen, True, 1, 1, ind, rangefinder_ver)
+record_sim_to_video(gen, net_type, 1.35, 0.876, ind, rangefinder_ver)

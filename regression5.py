@@ -15,6 +15,9 @@ num_points = 161 # This should be an odd number
 
 with open('reg5_data', 'rb') as f:
     nbrs_right, nbrs_left = pickle.load(f)
+    
+with open('nbrs_center_with_coords.pkl', 'rb') as f:
+    nbrs_center, train_x, train_y = pickle.load(f)
 
 def generate_rays(pos_x, pos_y, yaw):
     angle = yaw
@@ -129,3 +132,22 @@ def find_intersect_point(pos_x, pos_y, ray):
     if math.sqrt((pos_x-ray[ind_r][0])**2+(pos_y-ray[ind_r][1])**2) > math.sqrt((pos_x-ray[ind_l][0])**2+(pos_y-ray[ind_l][1])**2):
         return ray[ind_r][0], ray[ind_r][1]
     return ray[ind_l][0], ray[ind_l][1]
+
+def get_distance(test_x, test_y):
+    dist, indices = nbrs_center.kneighbors(np.array([[test_x, test_y]]))
+    index = indices[0][0]
+    nearestX = train_x[index]
+    nearestY = train_y[index]
+    deltaX = 0
+    deltaY = 0
+    if index > 2:
+        deltaX = nearestX-train_x[index-2]
+        deltaY = nearestY-train_y[index-2]
+    else:
+        deltaX = train_x[1]-train_x[0]
+        deltaY = train_y[1]-train_y[0]
+    otherDeltaX = test_x-nearestX
+    otherDeltaY = test_y-nearestY
+    
+    cross_result = np.cross([deltaX, deltaY], [otherDeltaX, otherDeltaY])
+    return (cross_result/abs(cross_result))*dist[0][0]

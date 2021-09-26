@@ -92,9 +92,10 @@ class Context_only_Net(nn.Module):
         Controller_activated_t = torch.tanh(Controller_hidden_t)
         Controller_output_t = self.Controller_output_linear(Controller_activated_t)
         output_t = torch.tanh(Controller_output_t)
-        output_t[1] = (output_t[1]+1)/2
         
-        return output_t
+        output_t[0][1] = (output_t[0][1]+1)/2
+        
+        return output_t[0]
 
 #--------------------------------------------------
 

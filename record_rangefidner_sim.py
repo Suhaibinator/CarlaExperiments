@@ -78,7 +78,7 @@ import pickle
 
 import regression9 as main_reg
 
-track = 1
+track = 3
 
 target_x = 25	
 target_y = 193.7	
@@ -559,7 +559,7 @@ def game_loop(args, net, scaler, port, phys_settings, cam_path):
             world.world.apply_settings(settings)
 
 
-        for i in range(math.ceil(35/timestep)):
+        for i in range(math.ceil(25/timestep)):
             world.world.tick()
             result = controller.parse_events(client, world)
             data.append((world.player.get_location().x, world.player.get_location().y, world.player.get_transform().rotation.yaw))

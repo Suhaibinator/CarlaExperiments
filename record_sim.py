@@ -16,6 +16,7 @@ import pickle
 import array
 import copy
 import torch
+
 import numpy as np
 
 
@@ -45,21 +46,31 @@ f.close()
 creator.create("FitnessMaxMin", base.Fitness, weights=(-1.0, -1.0)) # Min: f1 & Min: f2
 creator.create("Individual", array.array, typecode='f', fitness=creator.FitnessMaxMin, params=None)
 
-def record_sim_to_video(gen, context, steer_mult, torque_mult, ind_num, rangefinder_ver):
+def record_sim_to_video(gen, net_type, steer_mult, torque_mult, ind_num, rangefinder_ver):
     import os
-    if context:
+    net_desc = ""
+    if net_type == 'cs':
+        net_desc = 'context-skill_'
         from neural_net_torch import Context_Skill_Net as S_o_net # Skill-only Model
         with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
-    else:
+    elif net_type == 's':
+        net_desc = 'skill-only_'
         from neural_net_torch import Skill_only_Net as S_o_net # Skill-only Model
+        with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
+            cp = pickle.load(file)
+    elif net_type == 'c':
+        net_desc = 'context-only_'
+        from neural_net_torch import Context_only_Net as S_o_net # Skill-only Model
         with open("rangefinder_v" + str(rangefinder_ver) + "/gen" + str(gen) +"_CS1_checkpoint.pkl", 'rb') as file:
             cp = pickle.load(file)
     net_sample = S_o_net(n_obs, n_actions)
     pop = cp['population']
     
-    dir_name = "rangefinder_v" + str(rangefinder_ver) + ("context_" if context else "skill_") + "gen" + str(gen) + "_steer" + str(steer_mult) + "_torque" + str(torque_mult) + "_ind" + str(ind_num)
-    os.mkdir('./_out/'+dir_name)
+    
+    
+    dir_name = "rangefinder_v" + str(rangefinder_ver) + (net_desc) + "gen" + str(gen) + "_steer" + str(steer_mult) + "_torque" + str(torque_mult) + "_ind" + str(ind_num)
+    os.mkdir('./_out/' + dir_name)
     
     
     base_phys = {'flwf': 3.5, 'frwf': 3.5, 'rlwf': 3.5, 'rrwf': 3.5, 'mass': 2090,

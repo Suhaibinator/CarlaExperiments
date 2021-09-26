@@ -15,7 +15,7 @@ num_points = 351 # This should be an odd number
 
 mid_ind = int(num_points/2.0)
 
-with open('reg8.3_data', 'rb') as f:
+with open('reg8.4_data', 'rb') as f:
     #8.3 is track A new
     #8.2 is track B new
     #8.4 is fixed track B new
